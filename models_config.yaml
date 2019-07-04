@@ -1,0 +1,3 @@
+lm5_fr: resources/lm.fr.ng5.fsa
+lm3_fr: resources/lm.fr.ng3.fsa
+symspell_fr: resources/wordlist.txt

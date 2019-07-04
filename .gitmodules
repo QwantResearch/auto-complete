@@ -1,0 +1,9 @@
+[submodule "vendor/pistache"]
+	path = vendor/pistache
+	url = https://github.com/QwantResearch/pistache.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json.git
+[submodule "vendor/SymSpellPlusPlus"]
+	path = vendor/SymSpellPlusPlus
+	url = https://github.com/QwantResearch/SymSpellPlusPlus.git
