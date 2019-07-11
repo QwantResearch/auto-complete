@@ -18,9 +18,14 @@ SET(auto-complete
   ${CMAKE_SOURCE_DIR}/src/rest_server.cpp
   ${CMAKE_SOURCE_DIR}/src/utils.cpp
   ${CMAKE_SOURCE_DIR}/src/auto-complete.cpp
+  ${CMAKE_SOURCE_DIR}/src/benderrmq.cpp
+  ${CMAKE_SOURCE_DIR}/src/phrase_map.cpp
+  ${CMAKE_SOURCE_DIR}/src/segtree.cpp
+  ${CMAKE_SOURCE_DIR}/src/sparsetable.cpp
+  ${CMAKE_SOURCE_DIR}/src/lookuptables.cpp
 )
 add_executable(auto-complete ${auto-complete})
 
-target_link_libraries(auto-complete fst pistache pthread yaml-cpp symspell)
+target_link_libraries(auto-complete pistache pthread yaml-cpp symspell)
 
 install(TARGETS auto-complete DESTINATION bin)

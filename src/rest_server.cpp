@@ -4,10 +4,11 @@
 #include "rest_server.h"
 #include "utils.h"
 
+using namespace std;
+
 rest_server::rest_server(Address addr, std::string &classif_config, int debug) {
   httpEndpoint = std::make_shared<Http::Endpoint>(addr);
   _debug_mode = debug;
-
   std::ifstream model_config;
   model_config.open(classif_config);
   std::string line;
@@ -32,12 +33,12 @@ rest_server::rest_server(Address addr, std::string &classif_config, int debug) {
     }
 
     cout << domain << "\t" << file << "\t" ;
-    int l_type=0;
-    if ((int)domain.find("symspell") > -1) l_type=1;
+//     int l_type=0;
+//     if ((int)domain.find("symspell") > -1) l_type=1;
     
     try {
-      segmenter* segmenter_pointer = new segmenter(file, domain, l_type);
-      _list_segmenter.push_back(segmenter_pointer);
+      suggest* suggest_pointer = new suggest(file, domain);
+      _list_suggest.push_back(suggest_pointer);
     } catch (invalid_argument& inarg) {
       cerr << "[ERROR] " << inarg.what() << endl;
       continue;
@@ -62,10 +63,10 @@ void rest_server::start() {
 void rest_server::setupRoutes() {
   using namespace Rest;
 
-  Routes::Post(router, "/segmentation/",
+  Routes::Post(router, "/autocomplete/",
                Routes::bind(&rest_server::doSegmentationPost, this));
 
-  Routes::Get(router, "/segmentation/",
+  Routes::Get(router, "/autocomplete/",
               Routes::bind(&rest_server::doSegmentationGet, this));
 }
 
@@ -78,11 +79,11 @@ void rest_server::doSegmentationGet(const Rest::Request &request,
   response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
   response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
   string response_string = "{\"domains\":[";
-  for (int inc = 0; inc < (int)_list_segmenter.size(); inc++) {
+  for (int inc = 0; inc < (int)_list_suggest.size(); inc++) {
     if (inc > 0)
       response_string.append(",");
     response_string.append("\"");
-    response_string.append(_list_segmenter.at(inc)->getDomain());
+    response_string.append(_list_suggest.at(inc)->getDomain());
     response_string.append("\"");
   }
   response_string.append("]}");
@@ -123,13 +124,17 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
       if (_debug_mode != 0)
         cerr << "LOG: " << currentDateTime() << "\t"
              << "ASK CLASS :\t" << j << endl;
-      if (j.find("domain") != j.end()) {
+      if (j.find("domain") != j.end()) 
+      {
         string domain = j["domain"];
         std::vector<std::pair<float, std::string>> results;
-        results = askSegmentation(text, domain, count, threshold);
-        j.push_back(
-            nlohmann::json::object_t::value_type(string("segmentation"), results));
-      } else {
+        results = askAutoComplete(text, domain, count, threshold);
+        j.push_back(nlohmann::json::object_t::value_type(string("autocomplete"), results));
+        results = askAutoSuggest(text, domain, count, threshold);
+        j.push_back(nlohmann::json::object_t::value_type(string("autosuggest"), results));
+      } 
+      else 
+      {
         response.headers().add<Http::Header::ContentType>(
             MIME(Application, Json));
         response.send(Http::Code::Bad_Request,
@@ -155,16 +160,32 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
 }
 
 std::vector<std::pair<float, std::string>>
-rest_server::askSegmentation(std::string &text, std::string &domain,
+rest_server::askAutoComplete(std::string &text, std::string &domain,
                                int count, float threshold) {
   std::vector<std::pair<float, std::string>> to_return;
   if ((int)text.size() > 0) {
-    auto it_segmenter = std::find_if(_list_segmenter.begin(), _list_segmenter.end(),
-                                   [&](segmenter *l_segmenter) {
-                                     return l_segmenter->getDomain() == domain;
+    auto it_suggest = std::find_if(_list_suggest.begin(), _list_suggest.end(),
+                                   [&](suggest *l_suggest) {
+                                     return l_suggest->getDomain() == domain;
                                    });
-    if (it_segmenter != _list_segmenter.end()) {
-      to_return = (*it_segmenter)->process_url(text, count);
+    if (it_suggest != _list_suggest.end()) {
+      to_return = (*it_suggest)->process_query_autocomplete(text, count);
+    }
+  }
+  return to_return;
+}
+
+std::vector<std::pair<float, std::string>>
+rest_server::askAutoSuggest(std::string &text, std::string &domain,
+                               int count, float threshold) {
+  std::vector<std::pair<float, std::string>> to_return;
+  if ((int)text.size() > 0) {
+    auto it_suggest = std::find_if(_list_suggest.begin(), _list_suggest.end(),
+                                   [&](suggest *l_suggest) {
+                                     return l_suggest->getDomain() == domain;
+                                   });
+    if (it_suggest != _list_suggest.end()) {
+      to_return = (*it_suggest)->process_query_autosuggest(text, count);
     }
   }
   return to_return;
@@ -176,3 +197,5 @@ void rest_server::doAuth(const Rest::Request &request,
   response.cookies().add(Http::Cookie("lang", "fr-FR"));
   response.send(Http::Code::Ok);
 }
+
+

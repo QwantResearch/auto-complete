@@ -16,7 +16,7 @@
 #include <time.h>
 #include <yaml-cpp/yaml.h>
 
-#include "segmenter.h"
+#include "suggest.h"
 
 using namespace std;
 using namespace nlohmann;
@@ -33,7 +33,7 @@ public:
 
 private:
   int _debug_mode;
-  std::vector<segmenter *> _list_segmenter;
+  std::vector<suggest *> _list_suggest;
   std::shared_ptr<Http::Endpoint> httpEndpoint;
   Rest::Router router;
   typedef std::mutex Lock;
@@ -48,13 +48,16 @@ private:
   void doSegmentationPost(const Rest::Request &request,
                             Http::ResponseWriter response);
 
-  std::vector<std::pair<float, string> > askSegmentation(std::string &text, std::string &domain, int count, float threshold);
+  std::vector<std::pair<float, string> > askAutoComplete(std::string &text, std::string &domain, int count, float threshold);
+  std::vector<std::pair<float, string> > askAutoSuggest(std::string &text, std::string &domain, int count, float threshold);
 
   bool process_localization(string &input, json &output);
 
   void writeLog(string text_to_log) {}
 
   void doAuth(const Rest::Request &request, Http::ResponseWriter response);
+  
+
 };
 
 #endif // __REST_SERVER_H
