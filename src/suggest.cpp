@@ -29,11 +29,25 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autocomplete(
     std::vector<std::pair<float, std::string>> to_return;
     vector< std::unique_ptr<symspell::SuggestItem>> items;
     _symSpellModel->Lookup(query, symspell::Verbosity::All, items);
-    for(int i=0 ; i < nbest && i < (int)items.size(); i++)
-    {    
-        to_return.push_back(pair<float,string>(items[i]->count,items[i]->term));
+    if ((int)items.size() == 0)
+    {
+        string sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
+//         cerr << "sub query autocomplete : " << sub_query << endl;
+        _symSpellModel->Lookup(sub_query, symspell::Verbosity::All, items);
+        string tmp_str=query.substr(0,query.find(" "));
+        for(int i=0 ; i < nbest && i < (int)items.size(); i++)
+        {    
+            to_return.push_back(pair<float,string>(items[i]->count,tmp_str+" "+items[i]->term));
+        }
     }
-    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
+    else
+    {
+        for(int i=0 ; i < nbest && i < (int)items.size(); i++)
+        {    
+            to_return.push_back(pair<float,string>(items[i]->count,items[i]->term));
+        }
+    }
+//     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
 
     return to_return;
 }
@@ -42,11 +56,25 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggest(s
 {
     std::vector<std::pair<float, std::string>> to_return;
     vp_t results_segTree = smart_suggest(query,nbest);
-    for(int i=0 ; i < nbest && i < (int)results_segTree.size(); i++)
-    {    
-        to_return.push_back(pair<float,string>(results_segTree[i].weight,results_segTree[i].phrase));
+    if ((int)results_segTree.size() == 0)
+    {
+        string sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
+//         cerr << "sub query autosuggest : " << sub_query << endl;
+        results_segTree = smart_suggest(sub_query,nbest);
+        string tmp_str=query.substr(0,query.find(" "));
+        for(int i=0 ; i < nbest && i < (int)results_segTree.size(); i++)
+        {    
+            to_return.push_back(pair<float,string>(results_segTree[i].weight,tmp_str+" "+results_segTree[i].phrase));
+        }
     }
-    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
+    else
+    {
+        for(int i=0 ; i < nbest && i < (int)results_segTree.size(); i++)
+        {    
+            to_return.push_back(pair<float,string>(results_segTree[i].weight,results_segTree[i].phrase));
+        }
+    }
+//     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
     return to_return;
 }
 
