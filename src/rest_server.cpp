@@ -130,8 +130,15 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
         std::vector<std::pair<float, std::string>> results;
         results = askAutoComplete(text, domain, count, threshold);
         j.push_back(nlohmann::json::object_t::value_type(string("autocomplete"), results));
+        if ((int)results.size() > 0)
+        {
+            string tmp_str=results[0].second;
+            results = askAutoSuggest(tmp_str, domain, count, threshold);
+            j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
+        }
         results = askAutoSuggest(text, domain, count, threshold);
         j.push_back(nlohmann::json::object_t::value_type(string("autosuggest"), results));
+        
       } 
       else 
       {

@@ -10,7 +10,7 @@ git submodule update --init --recursive
 
 echo "Installing dependencies"
 
-pushd vendor && rm -rf openfst-1.6.1 && tar xvfz openfst-1.6.1.tar.gz && cd openfst-1.6.1 &&  ./configure --enable-ngram-fsts &&  make -j 4  && make install && popd
+# pushd vendor && rm -rf openfst-1.6.1 && tar xvfz openfst-1.6.1.tar.gz && cd openfst-1.6.1 &&  ./configure --enable-ngram-fsts &&  make -j 4  && make install && popd
 
 for dep in json pistache SymSpellPlusPlus
 do

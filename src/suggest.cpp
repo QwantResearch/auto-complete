@@ -29,22 +29,12 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autocomplete(
     std::vector<std::pair<float, std::string>> to_return;
     vector< std::unique_ptr<symspell::SuggestItem>> items;
     _symSpellModel->Lookup(query, symspell::Verbosity::All, items);
-//     std::shared_ptr<symspell::WordSegmentationItem> answer=_symSpellModel->WordSegmentation(query);
     for(int i=0 ; i < nbest && i < (int)items.size(); i++)
     {    
-//               cerr << items[i]->count << "\t" << items[i]->term << endl;
         to_return.push_back(pair<float,string>(items[i]->count,items[i]->term));
     }
-//     vp_t results_segTree = smart_suggest(query,nbest);
-//     cerr << results_json(query, results_segTree , "unk") << endl;
-//     for(int i=0 ; i < nbest && i < (int)results_segTree.size(); i++)
-//     {    
-//               cerr << items[i]->count << "\t" << items[i]->term << endl;
-//         to_return.push_back(pair<float,string>(results_segTree[i]->weight,results_segTree[i]->phrase));
-//     }
-//     to_return.push_back(pair<float,string>((float)answer->probabilityLogSum,answer->segmentedString));
-//           delete answer;
-//     answer->~WordSegmentationItem();
+    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
+
     return to_return;
 }
 
@@ -52,22 +42,17 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggest(s
 {
     std::vector<std::pair<float, std::string>> to_return;
     vp_t results_segTree = smart_suggest(query,nbest);
-    cerr << results_json(query, results_segTree , "unk") << endl;
     for(int i=0 ; i < nbest && i < (int)results_segTree.size(); i++)
     {    
-//               cerr << items[i]->count << "\t" << items[i]->term << endl;
         to_return.push_back(pair<float,string>(results_segTree[i].weight,results_segTree[i].phrase));
     }
-//     to_return.push_back(pair<float,string>((float)answer->probabilityLogSum,answer->segmentedString));
-//           delete answer;
-//     answer->~WordSegmentationItem();
+    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
     return to_return;
 }
 
 
 vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
     pvpi_t phrases = _pm.query(prefix);
-    // cerr<<"Got "<<phrases.second - phrases.first<<" candidate phrases from PhraseMap"<<endl;
 
     uint_t first = phrases.first  - _pm.repr.begin();
     uint_t last  = phrases.second - _pm.repr.begin();

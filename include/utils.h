@@ -275,6 +275,8 @@ void printCookies(const Pistache::Http::Request &req);
 
 const std::string currentDateTime();
 
+bool mySortingFunctionFloatString ( const std::pair<float, std::string>& i, const std::pair<float, std::string>& j );
+
 namespace Generic {
 void handleReady(const Pistache::Rest::Request &req, Pistache::Http::ResponseWriter response);
 } // namespace Generic

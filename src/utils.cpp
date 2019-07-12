@@ -313,6 +313,13 @@ void get_line(std::ifstream fin, char *buff, int buff_len, int &read_len)
 }
 
 
+bool mySortingFunctionFloatString ( const std::pair<float, std::string>& i, const std::pair<float, std::string>& j )
+{
+    if ( i.first < j.first ) return false;
+    if ( j.first <= i.first ) return true;
+    return true;
+//      return j.second < i.second;
+}
 
 
 namespace Generic {
