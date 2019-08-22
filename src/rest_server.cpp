@@ -33,8 +33,6 @@ rest_server::rest_server(Address addr, std::string &classif_config, int debug) {
     }
 
     cout << domain << "\t" << file << "\t" ;
-//     int l_type=0;
-//     if ((int)domain.find("symspell") > -1) l_type=1;
     
     try {
       suggest* suggest_pointer = new suggest(file, domain);
@@ -132,8 +130,6 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
         results = askAutoComplete(text, domain, count, threshold);
         json json_results_tmp;
         
-//         results_tmp
-//         j.push_back(nlohmann::json::object_t::value_type(string("autocomplete"), results));
         for (int i = 0 ; i < (int)results.size(); i++)
         {
             json local_json_results_tmp;
@@ -141,20 +137,12 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
             string tmp_str=results[i].second;
             results_tmp = askAutoSuggest(tmp_str, domain, count, threshold);
-//             j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
-            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("autosuggest"), results_tmp));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
             json_results_tmp.push_back(local_json_results_tmp);
-//             j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
         }
-        j.push_back(nlohmann::json::object_t::value_type(string("autocorrection"), json_results_tmp));
-//         if ((int)results.size() > 0)
-//         {
-//             string tmp_str=results[0].second;
-//             results = askAutoSuggest(tmp_str, domain, count, threshold);
-//             j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
-//         }
+        j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
         results = askAutoSuggest(text, domain, count, threshold);
-        j.push_back(nlohmann::json::object_t::value_type(string("autosuggest"), results));
+        j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results));
         
       } 
       else 
