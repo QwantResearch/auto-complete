@@ -138,7 +138,7 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
         {
             json local_json_results_tmp;
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first));
-            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("term"), results[i].second));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
             string tmp_str=results[i].second;
             results_tmp = askAutoSuggest(tmp_str, domain, count, threshold);
 //             j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
@@ -146,7 +146,7 @@ void rest_server::doSegmentationPost(const Rest::Request &request,
             json_results_tmp.push_back(local_json_results_tmp);
 //             j.push_back(nlohmann::json::object_t::value_type(string("autocomplete+autosuggest"), results));        
         }
-        j.push_back(nlohmann::json::object_t::value_type(string("autocomplete"), json_results_tmp));
+        j.push_back(nlohmann::json::object_t::value_type(string("autocorrection"), json_results_tmp));
 //         if ((int)results.size() > 0)
 //         {
 //             string tmp_str=results[0].second;
