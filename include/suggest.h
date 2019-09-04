@@ -41,9 +41,9 @@ typedef std::priority_queue<PhraseRange> pqpr_t;
 
 class suggest {
 public:
-  suggest(std::string &filename, std::string &domain);
-  std::vector<std::pair<float, std::string>> process_query_autocomplete(std::string& url, int nbest);
-  std::vector<std::pair<float, std::string>> process_query_autosuggest(std::string& url, int nbest);
+  suggest(std::string& filename_autocorrection, std::string& filename_autosuggestion, std::string &domain);
+  std::vector<std::pair<float, std::string>> process_query_autocorrection(std::string& url, int nbest);
+  std::vector<std::pair<float, std::string>> process_query_autosuggestion(std::string& url, int nbest);
   std::string getDomain() { return _domain; }
 //   int getModelType() { return _modelType; }
   vp_t naive_suggest(std::string prefix, uint_t n = 16);
@@ -55,10 +55,12 @@ public:
   
   
 private:
-    symspell::SymSpell* _symSpellModel;
+  // model for auto-correction
+    symspell::SymSpell* _symSpellModel_correction;
+  // model for auto-suggestion
+    RMQ _segmentTree_suggestion; 
     std::string _domain;  
     PhraseMap _pm;
-    RMQ _segmentTree; 
     bool _pm_is_building;
     char *_if_mmap_addr;
     off_t _if_length;

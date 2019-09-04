@@ -42,16 +42,20 @@ private:
 
   void setupRoutes();
 
-  void doSegmentationGet(const Rest::Request &request,
+  void doAutocompleteGet(const Rest::Request &request,
                            Http::ResponseWriter response);
 
-  void doSegmentationPost(const Rest::Request &request,
+  void doAutocompletePost(const Rest::Request &request,
                             Http::ResponseWriter response);
 
-  std::vector<std::pair<float, string> > askAutoComplete(std::string &text, std::string &domain, int count, float threshold);
-  std::vector<std::pair<float, string> > askAutoSuggest(std::string &text, std::string &domain, int count, float threshold);
+  void doAutocorrectionPost(const Rest::Request &request,
+                            Http::ResponseWriter response);
 
-  bool process_localization(string &input, json &output);
+  void doAutosuggestionPost(const Rest::Request &request,
+                            Http::ResponseWriter response);
+
+  std::vector<std::pair<float, string> > askAutoCorrection(std::string &text, std::string &domain, int count, float threshold);
+  std::vector<std::pair<float, string> > askAutoSuggestion(std::string &text, std::string &domain, int count, float threshold);
 
   void writeLog(string text_to_log) {}
 

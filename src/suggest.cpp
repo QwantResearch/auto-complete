@@ -5,35 +5,37 @@
 using namespace std;
 
 
-suggest::suggest(string& filename, std::string &domain)
+suggest::suggest(string& filename_autocorrection, string& filename_autosuggestion, std::string &domain)
 {
       int nadded = 0;
       int nlines = 0;
 
-    _symSpellModel = new symspell::SymSpell();
+    _symSpellModel_correction = new symspell::SymSpell();
     string l_line;
     _if_mmap_addr = NULL;
     _if_length = 0;
     time_t start_time = time(NULL);
-    _symSpellModel->LoadDictionary(filename.c_str(),1,0);
-    cerr << "Loaded SymSpell data from "<<  filename << " in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
+    cerr << "[INFO]:\t"<<currentDateTime()<<" Loading auto-correction data from "<<  filename_autocorrection <<  " ... " ;
+    _symSpellModel_correction->LoadDictionary(filename_autocorrection.c_str(),1,0);
+    cerr << "loaded in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
     start_time = time(NULL);
-    load_pm(filename,nadded,nlines);
-    cerr << "SegmentTree data loaded: "<< nadded << "/" << nlines << " from "<<  filename << " in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
+    cerr << "[INFO]:\t"<<currentDateTime()<<" Loading auto-suggestion data from "<<  filename_autosuggestion <<  " ... " ;
+    load_pm(filename_autosuggestion,nadded,nlines);
+    cerr << "loaded "<< nadded << "/" << nlines << " in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
     _domain=domain;
 }
 
 
-std::vector<std::pair<float, std::string>>  suggest::process_query_autocomplete(string& query, int nbest)
+std::vector<std::pair<float, std::string>>  suggest::process_query_autocorrection(string& query, int nbest)
 {
     std::vector<std::pair<float, std::string>> to_return;
     vector< std::unique_ptr<symspell::SuggestItem>> items;
-    _symSpellModel->Lookup(query, symspell::Verbosity::All, items);
+    _symSpellModel_correction->Lookup(query, symspell::Verbosity::All, items);
     if ((int)items.size() == 0)
     {
         string sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
 //         cerr << "sub query autocomplete : " << sub_query << endl;
-        _symSpellModel->Lookup(sub_query, symspell::Verbosity::All, items);
+        _symSpellModel_correction->Lookup(sub_query, symspell::Verbosity::All, items);
         string tmp_str=query.substr(0,query.find(" "));
         for(int i=0 ; i < nbest && i < (int)items.size(); i++)
         {    
@@ -52,7 +54,7 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autocomplete(
     return to_return;
 }
 
-std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggest(string& query, int nbest)
+std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestion(string& query, int nbest)
 {
     std::vector<std::pair<float, std::string>> to_return;
     vp_t results_segTree = smart_suggest(query,nbest);
@@ -93,7 +95,7 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
     --last;
 
     pqpr_t heap;
-    pui_t best = _segmentTree.query_max(first, last);
+    pui_t best = _segmentTree_suggestion.query_max(first, last);
     heap.push(PhraseRange(first, last, best.first, best.second));
 
     while (ret.size() < n && !heap.empty()) {
@@ -111,7 +113,7 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
         if (pr.index - 1 < pr.index && lower <= upper) {
             // cerr<<"[1] adding to heap: "<<lower<<", "<<upper<<", "<<best.first<<", "<<best.second<<endl;
 
-            best = _segmentTree.query_max(lower, upper);
+            best = _segmentTree_suggestion.query_max(lower, upper);
             heap.push(PhraseRange(lower, upper, best.first, best.second));
         }
 
@@ -122,7 +124,7 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
         if (pr.index + 1 > pr.index && lower <= upper) {
             // cerr<<"[2] adding to heap: "<<lower<<", "<<upper<<", "<<best.first<<", "<<best.second<<endl;
 
-            best = _segmentTree.query_max(lower, upper);
+            best = _segmentTree_suggestion.query_max(lower, upper);
             heap.push(PhraseRange(lower, upper, best.first, best.second));
         }
     }
@@ -198,7 +200,7 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
     for (size_t i = 0; i < _pm.repr.size(); ++i) {
         weights.push_back(_pm.repr[i].weight);
     }
-    _segmentTree.initialize(weights);
+    _segmentTree_suggestion.initialize(weights);
 
     rnadded = weights.size();
     rnlines = nlines;

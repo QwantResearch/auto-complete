@@ -17,7 +17,7 @@ void usage() {
           "[--threads <nthreads>] [--debug]\n\n"
           "\t--port (-p)              port to use (default 9009)\n"
           "\t--threads (-t)           number of threads (default 1)\n"
-          "\t--model-config (-f)      config file in which all models are "
+          "\t--config (-c)            config file in which all models are "
           "described (needed)\n"
           "\t--debug (-d)             debug mode (default false)\n"
           "\t--help (-h)              Show this message\n"
@@ -26,10 +26,10 @@ void usage() {
 }
 
 void ProcessArgs(int argc, char **argv) {
-  const char *const short_opts = "p:t:f:dh";
+  const char *const short_opts = "p:t:c:dh";
   const option long_opts[] = {
       {"port", 1, nullptr, 'p'},         {"threads", 1, nullptr, 't'},
-      {"model-config", 1, nullptr, 'f'}, {"debug", 0, nullptr, 'd'},
+      {"config", 1, nullptr, 'c'}, {"debug", 0, nullptr, 'd'},
       {"help", 0, nullptr, 'h'},         {nullptr, 0, nullptr, 0}};
 
   while (true) {
@@ -51,7 +51,7 @@ void ProcessArgs(int argc, char **argv) {
       debug = 1;
       break;
 
-    case 'f':
+    case 'c':
       model_config = optarg;
       break;
 
