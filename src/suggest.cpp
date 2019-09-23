@@ -23,6 +23,7 @@ suggest::suggest(string& filename_autocorrection, string& filename_autosuggestio
     load_pm(filename_autosuggestion,nadded,nlines);
     cerr << "loaded "<< nadded << "/" << nlines << " in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
     _domain=domain;
+    _symSpellModel_correction->setDistanceAlgorithm(symspell::EditDistance::DistanceAlgorithm::DamerauOSAspe);
 }
 
 

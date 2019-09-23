@@ -6,6 +6,7 @@
 // #define USE_SPARSEPP
 
 #include <symspell.h>
+#include <editdistance.h>
 #include <sstream>
 #include "utils.h"
 #include "types.h"
