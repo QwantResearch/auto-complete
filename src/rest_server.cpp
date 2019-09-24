@@ -160,7 +160,7 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
         std::vector<std::pair<float, std::string>> results_tmp;
         results = askAutoCorrection(text, domain, count_correction, threshold);
         json json_results_tmp;
-        
+        std::string best_correction="";
         for (int i = 0 ; i < (int)results.size(); i++)
         {
             json local_json_results_tmp;
@@ -170,11 +170,19 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
             string tmp_str=results[i].second;
             results_tmp = askAutoSuggestion(tmp_str, domain, count_suggestion, threshold);
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+            if (j.find("suggestions") == j.end() && results[i].first[1] == 0)
+            {
+                j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+            }
             json_results_tmp.push_back(local_json_results_tmp);
         }
         j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
-        results_tmp = askAutoSuggestion(text, domain, count_suggestion, threshold);
-        j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+        
+        if (j.find("suggestions") == j.end())
+        {
+            results_tmp = askAutoSuggestion(text, domain, count_suggestion, threshold);
+            j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+        }
         
       } 
       else 
