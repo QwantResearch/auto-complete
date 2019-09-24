@@ -54,7 +54,7 @@ private:
   void doAutosuggestionPost(const Rest::Request &request,
                             Http::ResponseWriter response);
 
-  std::vector<std::pair<float, string> > askAutoCorrection(std::string &text, std::string &domain, int count, float threshold);
+  std::vector<std::pair<std::vector<float>, string> > askAutoCorrection(std::string &text, std::string &domain, int count, float threshold);
   std::vector<std::pair<float, string> > askAutoSuggestion(std::string &text, std::string &domain, int count, float threshold);
 
   void writeLog(string text_to_log) {}

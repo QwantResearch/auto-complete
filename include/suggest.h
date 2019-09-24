@@ -43,7 +43,7 @@ typedef std::priority_queue<PhraseRange> pqpr_t;
 class suggest {
 public:
   suggest(std::string& filename_autocorrection, std::string& filename_autosuggestion, std::string &domain);
-  std::vector<std::pair<float, std::string>> process_query_autocorrection(std::string& url, int nbest);
+  std::vector<std::pair<std::vector<float>, std::string>> process_query_autocorrection(std::string& url, int nbest);
   std::vector<std::pair<float, std::string>> process_query_autosuggestion(std::string& url, int nbest);
   std::string getDomain() { return _domain; }
 //   int getModelType() { return _modelType; }

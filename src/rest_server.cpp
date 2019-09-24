@@ -156,7 +156,7 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
       if (j.find("domain") != j.end()) 
       {
         string domain = j["domain"];
-        std::vector<std::pair<float, std::string>> results;
+        std::vector<std::pair<std::vector<float>, std::string>> results;
         std::vector<std::pair<float, std::string>> results_tmp;
         results = askAutoCorrection(text, domain, count_correction, threshold);
         json json_results_tmp;
@@ -164,7 +164,8 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
         for (int i = 0 ; i < (int)results.size(); i++)
         {
             json local_json_results_tmp;
-            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first[0]));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("distance"), results[i].first[1]));
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
             string tmp_str=results[i].second;
             results_tmp = askAutoSuggestion(tmp_str, domain, count_suggestion, threshold);
@@ -172,8 +173,8 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
             json_results_tmp.push_back(local_json_results_tmp);
         }
         j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
-        results = askAutoSuggestion(text, domain, count_suggestion, threshold);
-        j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results));
+        results_tmp = askAutoSuggestion(text, domain, count_suggestion, threshold);
+        j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
         
       } 
       else 
@@ -236,22 +237,24 @@ void rest_server::doAutocorrectionPost(const Rest::Request& request, Http::Respo
       if (j.find("domain") != j.end()) 
       {
         string domain = j["domain"];
-        std::vector<std::pair<float, std::string>> results;
+        std::vector<std::pair<std::vector<float>, std::string>> results;
         std::vector<std::pair<float, std::string>> results_tmp;
         results = askAutoCorrection(text, domain, count, threshold);
-//         json json_results_tmp;
+        json json_results_tmp;
         
-//         for (int i = 0 ; i < (int)results.size(); i++)
-//         {
-//             json local_json_results_tmp;
-//             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first));
-//             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
-//             string tmp_str=results[i].second;
+        for (int i = 0 ; i < (int)results.size(); i++)
+        {
+            json local_json_results_tmp;
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first[0]));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("distance"), results[i].first[1]));
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
+            string tmp_str=results[i].second;
 //             results_tmp = askAutoSuggestion(tmp_str, domain, count, threshold);
 //             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
-//             json_results_tmp.push_back(local_json_results_tmp);
-//         }
-        j.push_back(nlohmann::json::object_t::value_type(string("corrections"), results));
+            json_results_tmp.push_back(local_json_results_tmp);
+        }
+        j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
+//         j.push_back(nlohmann::json::object_t::value_type(string("corrections"), results));
 //         results = askAutoSuggestion(text, domain, count, threshold);
 //         j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results));
         
@@ -365,10 +368,10 @@ void rest_server::doAutosuggestionPost(const Rest::Request& request, Http::Respo
 
 
 
-std::vector<std::pair<float, std::string>>
+std::vector<std::pair<std::vector<float>, std::string>>
 rest_server::askAutoCorrection(std::string &text, std::string &domain,
                                int count, float threshold) {
-  std::vector<std::pair<float, std::string>> to_return;
+  std::vector<std::pair<std::vector<float>, std::string>> to_return;
   if ((int)text.size() > 0) {
     auto it_suggest = std::find_if(_list_suggest.begin(), _list_suggest.end(),
                                    [&](suggest *l_suggest) {

@@ -27,9 +27,9 @@ suggest::suggest(string& filename_autocorrection, string& filename_autosuggestio
 }
 
 
-std::vector<std::pair<float, std::string>>  suggest::process_query_autocorrection(string& query, int nbest)
+std::vector<std::pair<std::vector<float>, std::string>>  suggest::process_query_autocorrection(string& query, int nbest)
 {
-    std::vector<std::pair<float, std::string>> to_return;
+    std::vector<std::pair<std::vector<float>, std::string>> to_return;
     vector< std::unique_ptr<symspell::SuggestItem>> items;
     _symSpellModel_correction->Lookup(query, symspell::Verbosity::All, items);
     if ((int)items.size() == 0)
@@ -40,14 +40,14 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autocorrectio
         string tmp_str=query.substr(0,query.find(" "));
         for(int i=0 ; i < nbest && i < (int)items.size(); i++)
         {    
-            to_return.push_back(pair<float,string>(items[i]->count,tmp_str+" "+items[i]->term));
+            to_return.push_back(pair<std::vector<float>,string>({(float)items[i]->count,(float)items[i]->distance},tmp_str+" "+items[i]->term));
         }
     }
     else
     {
         for(int i=0 ; i < nbest && i < (int)items.size(); i++)
         {    
-            to_return.push_back(pair<float,string>(items[i]->count,items[i]->term));
+            to_return.push_back(pair<std::vector<float>,string>({(float)items[i]->count,(float)items[i]->distance},items[i]->term));
         }
     }
 //     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
