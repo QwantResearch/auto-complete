@@ -170,7 +170,7 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
             string tmp_str=results[i].second;
             results_tmp = askAutoSuggestion(tmp_str, domain, count_suggestion, threshold);
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
-            if (j.find("suggestions") == j.end())
+            if (j.find("suggestions") == j.end() && (int)results_tmp.size() > 0)
             {
                 j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
             }
