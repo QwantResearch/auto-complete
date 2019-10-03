@@ -157,8 +157,10 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
       {
         string domain = j["domain"];
         std::vector<std::pair<std::vector<float>, std::string>> results;
-        std::vector<std::pair<float, std::string>> results_tmp;
+        std::vector<std::pair<float, std::string>> resultsSuggestion,resultsCorrectedSuggestion;
         results = askAutoCorrection(text, domain, count_correction, threshold);
+        resultsSuggestion = askAutoSuggestion(text, domain, count_suggestion, threshold);
+        j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), resultsSuggestion));
         json json_results_tmp;
         std::string best_correction="";
         for (int i = 0 ; i < (int)results.size(); i++)
@@ -168,19 +170,27 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("distance"), results[i].first[1]));
             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
             string tmp_str=results[i].second;
-            results_tmp = askAutoSuggestion(tmp_str, domain, count_suggestion, threshold);
-            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
-            if (j.find("suggestions") == j.end() && (int)results_tmp.size() > 0)
+            resultsCorrectedSuggestion = askAutoSuggestion(tmp_str, domain, count_suggestion, threshold);
+            local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), resultsCorrectedSuggestion));
+            if ((int)resultsSuggestion.size() == 0 && (int)resultsCorrectedSuggestion.size() > 0 && i == 0)
             {
-                j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+                j["suggestions"]=resultsCorrectedSuggestion;
+                resultsSuggestion=resultsCorrectedSuggestion;
+            }
+            if ((int)resultsCorrectedSuggestion.size() > 0 && results[i].first[1] == 0)
+            {
+                if (resultsCorrectedSuggestion[0].first > resultsSuggestion[0].first)
+                {
+                    j["suggestions"]=resultsCorrectedSuggestion;
+                }
             }
             json_results_tmp.push_back(local_json_results_tmp);
         }
         j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
         if (j.find("suggestions") == j.end())
         {
-            results_tmp = askAutoSuggestion(text, domain, count_suggestion, threshold);
-            j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
+            resultsSuggestion = askAutoSuggestion(text, domain, count_suggestion, threshold);
+            j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), resultsSuggestion));
         }
         
       } 
