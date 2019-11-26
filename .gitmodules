@@ -1,9 +1,9 @@
-[submodule "vendor/pistache"]
-	path = vendor/pistache
-	url = https://github.com/QwantResearch/pistache.git
-[submodule "vendor/json"]
-	path = vendor/json
-	url = https://github.com/nlohmann/json.git
-[submodule "vendor/SymSpellPlusPlus"]
-	path = vendor/SymSpellPlusPlus
+[submodule "third_party/SymSpellPlusPlus"]
+	path = third_party/SymSpellPlusPlus
 	url = https://github.com/QwantResearch/SymSpellPlusPlus.git
+[submodule "third_party/json"]
+	path = third_party/json
+	url = https://github.com/nlohmann/json.git
+[submodule "third_party/pistache"]
+	path = third_party/pistache
+	url = https://github.com/oktal/pistache.git
