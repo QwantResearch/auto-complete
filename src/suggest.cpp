@@ -217,13 +217,13 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
                     while (l_inc < (int)l_input.size())
                     {
                         l_buff=l_str_count+"\t"+l_input[l_inc];
-                        int llen = (int)buff.size();
+                        int llen = (int)l_buff.size();
                         ++nlines;
 
                         int weight = 0;
                         std::string phrase;
                         StringProxy snippet;
-                        InputLineParser(_if_mmap_addr, foffset, buff.c_str(), &weight, &phrase, &snippet).start_parsing(_if_mmap_addr,_if_length);
+                        InputLineParser(_if_mmap_addr, foffset, l_buff.c_str(), &weight, &phrase, &snippet).start_parsing(_if_mmap_addr,_if_length);
 
                         foffset += llen;
 
