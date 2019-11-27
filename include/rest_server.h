@@ -25,14 +25,16 @@ using namespace Pistache;
 class rest_server {
 
 public:
-  rest_server(Address addr, string &classif_config, int debug_mode = 0);
+  rest_server(string &classif_config, int debug_mode = 0);
 
   void init(size_t thr = 2);
   void start();
   void shutdown() { httpEndpoint->shutdown(); }
+  void setPort(int p) {_num_port=p;}
 
 private:
   int _debug_mode;
+  int _num_port;
   std::vector<suggest *> _list_suggest;
   std::shared_ptr<Http::Endpoint> httpEndpoint;
   Rest::Router router;

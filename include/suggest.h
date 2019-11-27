@@ -5,9 +5,11 @@
 
 // #define USE_SPARSEPP
 
+#include <unordered_map>
 #include <symspell.h>
 #include <editdistance.h>
 #include <sstream>
+#include <nlohmann/json.hpp>
 #include "utils.h"
 #include "types.h"
 #include "phrase_map.h"
@@ -62,6 +64,8 @@ private:
     RMQ _segmentTree_suggestion; 
     std::string _domain;  
     PhraseMap _pm;
+    bool _use_correspondance_data;
+    std::unordered_map <std::string, std::string> _correspondances;
     bool _pm_is_building;
     char *_if_mmap_addr;
     off_t _if_length;

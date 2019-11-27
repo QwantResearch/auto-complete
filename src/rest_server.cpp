@@ -6,8 +6,9 @@
 
 using namespace std;
 
-rest_server::rest_server(Address addr, std::string &config_file, int debug) {
+rest_server::rest_server(std::string &config_file, int debug) {
   _debug_mode = debug;
+  _num_port=9009;
 // std::ifstream model_config;
 //   model_config.open(classif_config);
     std::string line;
@@ -56,10 +57,14 @@ rest_server::rest_server(Address addr, std::string &config_file, int debug) {
       cerr << "[ERROR]\t" << bf.what() << endl;
       exit(1);
     }
-    httpEndpoint = std::make_shared<Http::Endpoint>(addr);
 }
 
 void rest_server::init(size_t thr) {
+  // Creating the entry point of the REST API.
+  Pistache::Port pport(_num_port);
+  Address addr(Ipv4::any(), pport);
+  httpEndpoint = std::make_shared<Http::Endpoint>(addr);
+
   auto opts = Http::Endpoint::options().threads(thr).flags(
       Tcp::Options::InstallSignalHandler);
   httpEndpoint->init(opts);
@@ -68,6 +73,7 @@ void rest_server::init(size_t thr) {
 
 void rest_server::start() {
   httpEndpoint->setHandler(router.handler());
+  cout << "[INFO]\t" << currentDateTime() <<"\tREST server listening on 0.0.0.0:" << _num_port << endl;
   httpEndpoint->serve();
   httpEndpoint->shutdown();
 }

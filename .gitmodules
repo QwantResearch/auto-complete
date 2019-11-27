@@ -6,4 +6,4 @@
 	url = https://github.com/nlohmann/json.git
 [submodule "third_party/pistache"]
 	path = third_party/pistache
-	url = https://github.com/oktal/pistache.git
+	url = https://github.com/QwantResearch/pistache.git

@@ -71,17 +71,17 @@ void ProcessArgs(int argc, char **argv) {
 
 int main(int argc, char **argv) {
   ProcessArgs(argc, argv);
-  Pistache::Port port(num_port);
+//   Pistache::Port port(num_port);
 
-  Address addr(Ipv4::any(), port);
+//   Address addr(Ipv4::any(), port);
 
   cout << "Cores = " << hardware_concurrency() << endl;
   cout << "Using " << threads << " threads" << endl;
-  cout << "Using port " << port << endl;
+  cout << "Using port " << num_port << endl;
   cout << "Using config file " << model_config << endl;
 
-  rest_server segmenter_api(addr, model_config, debug);
-
+  rest_server segmenter_api(model_config, debug);
+  segmenter_api.setPort(num_port);
   segmenter_api.init(threads);
   segmenter_api.start();
   segmenter_api.shutdown();
