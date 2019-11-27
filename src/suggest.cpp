@@ -160,7 +160,10 @@ vp_t suggest::naive_suggest(std::string prefix, uint_t n) {
 int suggest::load_pm(string file, int& rnadded, int& rnlines)
 {
     bool is_input_sorted = true;
+    bool is_json = false;
+    
     std::ifstream fin(file.c_str());
+    if ((int)file.find(".json") > -1) is_json = true;
 
     _pm_is_building = true;
     int nlines = 0;
@@ -171,25 +174,75 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
     std::string buff;
     while (getline(fin,buff)) 
     {
-        int llen = (int)buff.size();
-        ++nlines;
+        if ( ! is_json)
+        {
+            int llen = (int)buff.size();
+            ++nlines;
 
-        int weight = 0;
-        std::string phrase;
-        StringProxy snippet;
-        InputLineParser(_if_mmap_addr, foffset, buff.c_str(), &weight, &phrase, &snippet).start_parsing(_if_mmap_addr,_if_length);
+            int weight = 0;
+            std::string phrase;
+            StringProxy snippet;
+            InputLineParser(_if_mmap_addr, foffset, buff.c_str(), &weight, &phrase, &snippet).start_parsing(_if_mmap_addr,_if_length);
 
-        foffset += llen;
+            foffset += llen;
 
-        if (!phrase.empty()) {
-            //str_lowercase(phrase);
-            DCERR("Adding: " << weight << ", " << phrase << ", " << std::string(snippet) << endl);
-            _pm.insert(weight, phrase, snippet);
+            if (!phrase.empty()) {
+                //str_lowercase(phrase);
+                DCERR("Adding: " << weight << ", " << phrase << ", " << std::string(snippet) << endl);
+                _pm.insert(weight, phrase, snippet);
+            }
+            if (is_input_sorted && prev_phrase <= phrase) {
+                prev_phrase.swap(phrase);
+            } else if (is_input_sorted) {
+                is_input_sorted = false;
+            }
         }
-        if (is_input_sorted && prev_phrase <= phrase) {
-            prev_phrase.swap(phrase);
-        } else if (is_input_sorted) {
-            is_input_sorted = false;
+        else
+        {
+            nlohmann::json l_data=nlohmann::json::parse(buff);
+            
+//             nlohmann::json l_data_suggest = l_data.find("suggest");
+            if (l_data.find("suggest") != l_data.end() && l_data.find("count") != l_data.end() )
+            {
+                nlohmann::json l_data_suggest = l_data["suggest"];
+                long l_count=l_data["count"];
+                std::string l_str_count=std::to_string(l_count);
+                if (l_data_suggest.find("input") != l_data_suggest.end() && l_data_suggest.find("output") != l_data_suggest.end())
+                {
+                    
+                    vector<std::string> l_input=l_data_suggest["input"];
+                    std::string l_output=l_data_suggest["output"];
+                    int l_inc=0;
+                    std::string l_buff;
+                    while (l_inc < (int)l_input.size())
+                    {
+                        l_buff=l_str_count+"\t"+l_input[l_inc];
+                        int llen = (int)buff.size();
+                        ++nlines;
+
+                        int weight = 0;
+                        std::string phrase;
+                        StringProxy snippet;
+                        InputLineParser(_if_mmap_addr, foffset, buff.c_str(), &weight, &phrase, &snippet).start_parsing(_if_mmap_addr,_if_length);
+
+                        foffset += llen;
+
+                        if (!phrase.empty()) {
+                            //str_lowercase(phrase);
+                            DCERR("Adding: " << weight << ", " << phrase << ", " << std::string(snippet) << endl);
+                            _pm.insert(weight, phrase, snippet);
+                        }
+                        if (is_input_sorted && prev_phrase <= phrase) {
+                            prev_phrase.swap(phrase);
+                        } else if (is_input_sorted) {
+                            is_input_sorted = false;
+                        }
+
+                        _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],l_output));
+                        l_inc++;
+                    }
+                }
+            }
         }
     }
 // 
