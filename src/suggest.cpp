@@ -63,10 +63,17 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
     string phrase_to_print;
     if ((int)results_segTree.size() == 0)
     {
-        string sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
-//         cerr << "sub query autosuggest : " << sub_query << endl;
+        string sub_query="";
+        string tmp_str="";
+        sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
         results_segTree = smart_suggest(sub_query,nbest);
-        string tmp_str=query.substr(0,query.find(" "));
+        tmp_str=query.substr(0,query.find(" "));
+        while ((int)results_segTree.size()==0 && (int)sub_query.size() > 0)
+        {
+            sub_query=sub_query.substr(sub_query.find(" ")+1,(int)sub_query.size()-sub_query.find(" "));
+            results_segTree = smart_suggest(sub_query,nbest);
+            tmp_str=tmp_str+" "+sub_query.substr(0,sub_query.find(" "));
+        }
         for(int i=0 ; i < (int)results_segTree.size(); i++)
         {    
             if (_use_correspondance_data) phrase_to_print=(*(_correspondances.find(results_segTree[i].phrase))).second;
