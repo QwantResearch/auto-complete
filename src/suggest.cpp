@@ -233,7 +233,7 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
                     nlohmann::json l_data_suggest = l_data["suggest"];
                     long l_count=l_data["count"];
                     std::string l_str_count=std::to_string(l_count);
-                    if (l_data_suggest.find("input") != l_data_suggest.end() && l_data_suggest.find("output") != l_data_suggest.end())
+                    if (l_data_suggest.find("input") != l_data_suggest.end() && l_data_suggest.find("output") != l_data_suggest.end() )
                     {
                         
                         vector<std::string> l_input=l_data_suggest["input"];
@@ -241,6 +241,8 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
                         int l_inc=0;
                         std::string l_buff;
                         std::string phrase;
+                        int l_weight=1;
+                        if (l_data_suggest.find("weight") != l_data_suggest.end()) l_weight=l_data_suggest["weight"];
                         while (l_inc < (int)l_input.size())
                         {
 //                             cerr << ".";
@@ -256,6 +258,7 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
 
                             if (!phrase.empty()) {
                                 //str_lowercase(phrase);
+                                weight=weight*l_weight;
                                 DCERR("Adding: " << weight << ", " << phrase << ", " << std::string(snippet) << endl);
                                 _pm.insert(weight, phrase, snippet);
                             }
