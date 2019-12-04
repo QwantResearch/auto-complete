@@ -68,17 +68,28 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
         sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
         results_segTree = smart_suggest(sub_query,nbest);
         tmp_str=query.substr(0,query.find(" "));
-        while ((int)results_segTree.size()==0 && (int)sub_query.size() > 0)
+        
+        while ((int)results_segTree.size()==0 && (int)sub_query.size() > 0 && (int)sub_query.find(" ") > -1)
         {
+            tmp_str=tmp_str+" "+sub_query.substr(0,sub_query.find(" "));
             sub_query=sub_query.substr(sub_query.find(" ")+1,(int)sub_query.size()-sub_query.find(" "));
             results_segTree = smart_suggest(sub_query,nbest);
-            tmp_str=tmp_str+" "+sub_query.substr(0,sub_query.find(" "));
         }
         for(int i=0 ; i < (int)results_segTree.size(); i++)
         {    
             if (_use_correspondance_data) phrase_to_print=(*(_correspondances.find(results_segTree[i].phrase))).second;
             else phrase_to_print=results_segTree[i].phrase;
             to_return.push_back(pair<float,string>(results_segTree[i].weight,tmp_str+" "+phrase_to_print));
+        }
+        if ((int)results_segTree.size() == 0 && (int)phrase_to_print.size() == 0) 
+        {
+            results_segTree = smart_suggest(query.substr(0,query.rfind(" ")),nbest);
+            for(int i=0 ; i < (int)results_segTree.size(); i++)
+            {    
+                if (_use_correspondance_data) phrase_to_print=(*(_correspondances.find(results_segTree[i].phrase))).second;
+                else phrase_to_print=results_segTree[i].phrase;
+                to_return.push_back(pair<float,string>(results_segTree[i].weight,phrase_to_print));
+            }
         }
     }
     else

@@ -155,6 +155,7 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
   }
   if (j.find("text") != j.end()) {
     string text = j["text"];
+    text=trim(text);
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
@@ -253,6 +254,7 @@ void rest_server::doAutocorrectionPost(const Rest::Request& request, Http::Respo
   }
   if (j.find("text") != j.end()) {
     string text = j["text"];
+    text=trim(text);
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
@@ -335,6 +337,7 @@ void rest_server::doAutosuggestionPost(const Rest::Request& request, Http::Respo
   }
   if (j.find("text") != j.end()) {
     string text = j["text"];
+    text=trim(text);
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
