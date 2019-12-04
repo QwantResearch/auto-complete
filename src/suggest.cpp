@@ -246,7 +246,8 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
                         while (l_inc < (int)l_input.size())
                         {
 //                             cerr << ".";
-                            l_buff=l_str_count+"\t"+l_input[l_inc];
+//                            l_buff=l_str_count+"\t"+l_input[l_inc];
+                            l_buff=std::to_string(l_weight)+"\t"+l_input[l_inc];
                             int llen = (int)l_buff.size();
                             ++nlines;
                             phrase.clear();
@@ -258,7 +259,7 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
 
                             if (!phrase.empty()) {
                                 //str_lowercase(phrase);
-                                weight=weight*l_weight;
+                                //weight=weight*l_weight;
                                 DCERR("Adding: " << weight << ", " << phrase << ", " << std::string(snippet) << endl);
                                 _pm.insert(weight, phrase, snippet);
                             }
@@ -267,8 +268,43 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
                             } else if (is_input_sorted) {
                                 is_input_sorted = false;
                             }
-
-                            _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],l_output));
+                            if (_correspondances.find(l_output) != _correspondances.end()) 
+                            {
+                                auto l_already_exists=_correspondances.find(l_output);
+//                                 cerr << "OUTPUT:|" << l_input[l_inc] <<"|" << l_output <<"|" << (*l_already_exists).first  <<"|" << (*l_already_exists).second  <<"|" << weight << "|" << endl;
+                                _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],(*l_already_exists).second));
+                            }
+                            if (_correspondances.find(l_input[l_inc]) != _correspondances.end()) 
+                            {
+                                auto l_already_exists=_correspondances.find(l_input[l_inc]);
+                                auto test=naive_suggest(l_input[l_inc],1);
+//                                 cerr << "INPUT:|" << l_input[l_inc] <<"|" << l_output <<"|" << (*l_already_exists).first  <<"|" << (*l_already_exists).second  <<"|" << weight << "|" << endl;
+                                if ((int)test.size() == 1) 
+                                {
+//                                     cerr << test[0].weight << endl;
+                                    if (test[0].weight > l_weight ) 
+                                    {
+//                                         cerr << "cas 0 : "<< l_input[l_inc] << "|" << (*l_already_exists).second << endl;
+                                        l_output = (*l_already_exists).second;
+                                        _correspondances.erase(l_already_exists);
+                                        _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],l_output));
+                                    }
+                                    else
+                                    {
+//                                         cerr << "cas 1 : "<< (*l_already_exists).first << "|" << l_output << endl;
+                                        std::string l_input = (*l_already_exists).first;
+                                        _correspondances.erase(l_already_exists);
+                                        _correspondances.insert(pair<std::string,std::string>(l_input,l_output));
+                                    }
+//                                 _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],(*l_already_exists).second));
+                                }
+                                else
+                                {
+                                    _correspondances.erase(l_already_exists);
+                                    _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],l_output));   
+                                }
+                            }
+                            else _correspondances.insert(pair<std::string,std::string>(l_input[l_inc],l_output));                            
                             l_inc++;
                         }
                     }
@@ -276,7 +312,7 @@ int suggest::load_pm(string file, int& rnadded, int& rnlines)
             }
         }
     }
-    cerr << "."<< endl;
+//     cerr << "."<< endl;
 // 
 //         DCERR("Creating PhraseMap::Input is " << (!is_input_sorted ? "NOT " : "") << "sorted\n");
 
