@@ -264,6 +264,8 @@ inline std::ostream& operator<<(std::ostream& out, phrase_t const& p)
 }
 
 
+std::string trim(std::string& str);
+
 int edit_distance(std::string const& lhs, std::string const& rhs);
 
 std::string bitmap_str(uint_t i);
