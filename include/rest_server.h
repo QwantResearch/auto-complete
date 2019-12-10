@@ -47,6 +47,9 @@ private:
   void doAutocompleteGet(const Rest::Request &request,
                            Http::ResponseWriter response);
 
+  void doAutocompleteOptions(const Rest::Request &request,
+                           Http::ResponseWriter response);
+
   void doAutocompletePost(const Rest::Request &request,
                             Http::ResponseWriter response);
 

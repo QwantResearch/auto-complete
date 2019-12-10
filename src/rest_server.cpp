@@ -87,17 +87,26 @@ void rest_server::setupRoutes() {
   Routes::Get(router, "/autocomplete/",
               Routes::bind(&rest_server::doAutocompleteGet, this));
 
+  Routes::Options(router, "/autocomplete/",
+              Routes::bind(&rest_server::doAutocompleteOptions, this));
+
   Routes::Post(router, "/autocorrection/",
                Routes::bind(&rest_server::doAutocorrectionPost, this));
 
   Routes::Get(router, "/autocorrection/",
               Routes::bind(&rest_server::doAutocompleteGet, this));
 
+  Routes::Options(router, "/autocorrection/",
+              Routes::bind(&rest_server::doAutocompleteOptions, this));
+
   Routes::Post(router, "/autosuggestion/",
                Routes::bind(&rest_server::doAutosuggestionPost, this));
 
   Routes::Get(router, "/autosuggestion/",
               Routes::bind(&rest_server::doAutocompleteGet, this));
+
+  Routes::Options(router, "/autosuggestion/",
+              Routes::bind(&rest_server::doAutocompleteOptions, this));
 }
 
 void rest_server::doAutocompleteGet(const Rest::Request &request,
@@ -105,7 +114,7 @@ void rest_server::doAutocompleteGet(const Rest::Request &request,
   response.headers().add<Http::Header::AccessControlAllowHeaders>(
       "Content-Type");
   response.headers().add<Http::Header::AccessControlAllowMethods>(
-      "GET, POST, DELETE, OPTIONS");
+      "GET, POST, OPTIONS");
   response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
   response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
   string response_string = "{\"domains\":[";
@@ -122,12 +131,26 @@ void rest_server::doAutocompleteGet(const Rest::Request &request,
   response.send(Pistache::Http::Code::Ok, response_string);
 }
 
+void rest_server::doAutocompleteOptions(const Rest::Request &request,
+                                      Http::ResponseWriter response) {
+  response.headers().add<Http::Header::AccessControlAllowHeaders>(
+      "Content-Type");
+  response.headers().add<Http::Header::AccessControlAllowMethods>(
+      "GET, POST, OPTIONS");
+  response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
+  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+  string response_string = "";
+  if (_debug_mode != 0)
+    cerr << "[DEBUG]\t" << currentDateTime() << "\tRESPONSE OPTIONS\t" << response_string << endl;
+  response.send(Pistache::Http::Code::Ok, response_string);
+}
+
 void rest_server::doAutocompletePost(const Rest::Request &request,
                                        Http::ResponseWriter response) {
   response.headers().add<Http::Header::AccessControlAllowHeaders>(
       "Content-Type");
   response.headers().add<Http::Header::AccessControlAllowMethods>(
-      "GET, POST, DELETE, OPTIONS");
+      "GET, POST, OPTIONS");
   response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
   nlohmann::json j = nlohmann::json::parse(request.body());
   int count = 10;
@@ -232,7 +255,7 @@ void rest_server::doAutocorrectionPost(const Rest::Request& request, Http::Respo
   response.headers().add<Http::Header::AccessControlAllowHeaders>(
       "Content-Type");
   response.headers().add<Http::Header::AccessControlAllowMethods>(
-      "GET, POST, DELETE, OPTIONS");
+      "GET, POST, OPTIONS");
   response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
   nlohmann::json j = nlohmann::json::parse(request.body());
   int count = 10;
@@ -315,7 +338,7 @@ void rest_server::doAutosuggestionPost(const Rest::Request& request, Http::Respo
   response.headers().add<Http::Header::AccessControlAllowHeaders>(
       "Content-Type");
   response.headers().add<Http::Header::AccessControlAllowMethods>(
-      "GET, POST, DELETE, OPTIONS");
+      "GET, POST, OPTIONS");
   response.headers().add<Http::Header::AccessControlAllowOrigin>("*");
   nlohmann::json j = nlohmann::json::parse(request.body());
   int count = 10;
