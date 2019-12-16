@@ -13,7 +13,7 @@ The sugestion module uses a segment tree approach (https://en.wikipedia.org/wiki
 
 Or with docker:
 
-```docker built -t "autocompleteimage" .```
+```docker build -t "autocompleteimage" .```
 
 ```docker run -p 9009:9009 -d --rm autocompleteimage -c models_config.yaml```
 
