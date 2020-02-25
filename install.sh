@@ -24,6 +24,20 @@ pushd third_party/$dep
 popd
 done
 
+for dep in kenlm
+do
+	pushd third_party/ 
+	tar xvfz $dep.tar.gz
+		pushd kenlm
+        		rm -rf build
+        		mkdir -p build
+	        	pushd build
+	                	cmake .. -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DCMAKE_BUILD_TYPE=Release
+	                	make -j 4 && make install
+	       		popd
+		popd
+	popd
+done
 
 echo "Installing auto-complete"
 mkdir -p $PREFIX
