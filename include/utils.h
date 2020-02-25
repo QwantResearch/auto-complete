@@ -69,8 +69,6 @@ inline int hex2dec(unsigned char ch)
 #undef BOUNDED_RETURN
 
 
-
-
 struct InputLineParser {
     int state;            // Current parsing state
     const char *mem_base; // Base address of the mmapped file

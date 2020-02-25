@@ -15,8 +15,15 @@
 #include "phrase_map.h"
 #include "benderrmq.h"
 
+#include "lm/max_order.hh"
+#include "lm/model.hh"
+#include "lm/state.hh"
+#include "lm/virtual_interface.hh"
+#include "util/tokenize_piece.hh"
 
 using namespace std;
+using namespace lm::ngram;
+using namespace lm::base;
 
 
 struct PhraseRange {
@@ -51,10 +58,10 @@ public:
 //   int getModelType() { return _modelType; }
   vp_t naive_suggest(std::string prefix, uint_t n = 16);
   vp_t smart_suggest(std::string prefix, uint_t n = 16);
-  int load_pm(string file, int& rnadded, int& rnlines);
+  int load_pm(string& file, int& rnadded, int& rnlines);
   off_t file_size(const char *path);
-
-  
+  bool load_lm(std::string & kenlm_filename);
+  float ScoreSentenceLM(const char *sentence);
   
   
 private:
@@ -69,6 +76,8 @@ private:
     bool _pm_is_building;
     char *_if_mmap_addr;
     off_t _if_length;
+    lm::ngram::Model* kenlm;
+//     auto kenlm_vocab;
     
 };
 

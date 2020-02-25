@@ -51,7 +51,7 @@ std::vector<std::pair<std::vector<float>, std::string>>  suggest::process_query_
         }
     }
 //     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
-
+    
     return to_return;
 }
 
@@ -101,9 +101,22 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
             to_return.push_back(pair<float,string>(results_segTree[i].weight,phrase_to_print));
         }
     }
+    if (kenlm != NULL)
+    {
+        cerr << "kenlm c'est pas null !"<<endl;
+        for(int i=0 ; i < (int)to_return.size(); i++)
+        {    
+            cerr << to_return[i].second <<"\t"<< to_return[i].first << "\t"<< ScoreSentenceLM(to_return[i].second.c_str()) << endl;
+        }
+    }
+    else
+    {
+        cerr << "kenlm c'est null !"<<endl;
+    }
+        
 //     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
     if ((int)to_return.size() > 0) to_return_final.push_back(to_return.at(0));
-    for(int i=1 ; i < (int)to_return.size() && nbest > (int)to_return_final.size(); i++)
+    for(int i=1 ; i < (int)to_return.size() && nbest > (int)to_return_final.size(); i++) // to remove double results
     {
         string prev = to_return.at(i-1).second;
         string current = to_return.at(i).second;
@@ -188,7 +201,7 @@ vp_t suggest::naive_suggest(std::string prefix, uint_t n) {
 }
 
 
-int suggest::load_pm(string file, int& rnadded, int& rnlines)
+int suggest::load_pm(string& file, int& rnadded, int& rnlines)
 {
     bool is_input_sorted = true;
     bool is_json = false;
@@ -357,4 +370,35 @@ off_t suggest::file_size(const char *path)
     }
 
     return sbuf.st_size;
+}
+
+bool suggest::load_lm(std::string& kenlm_filename)
+{
+    kenlm=new lm::ngram::Model(kenlm_filename.c_str());
+//     kenlm_vocab = kenlm->GetVocabulary();
+    return true;
+}
+
+float suggest::ScoreSentenceLM(const char *sentence) // from KenLM source code
+{
+  // TODO: reduce virtual dispatch to one per sentence?
+  const lm::base::Vocabulary &vocab = kenlm->BaseVocabulary();
+  // We know it's going to be a KenLM State.
+  lm::ngram::State state_vec[2];
+  lm::ngram::State *state = &state_vec[0];
+  lm::ngram::State *state2 = &state_vec[1];
+  kenlm->BeginSentenceWrite(state);
+  float ret = 0.0;
+  float per = 0.0;
+  float nbr_words=0;
+  for (util::TokenIter<util::BoolCharacter, true> i(sentence, util::kSpaces); i; ++i) {
+    lm::WordIndex index = vocab.Index(*i);
+    ret += kenlm->BaseScore(state, index, state2);
+    std::swap(state, state2);
+    nbr_words=nbr_words+1;
+  }
+  nbr_words=nbr_words+1;
+  ret += kenlm->BaseScore(state, vocab.EndSentence(), state2);
+  per = pow (10,ret/nbr_words);
+  return per;
 }

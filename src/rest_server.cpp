@@ -29,9 +29,15 @@ rest_server::rest_server(std::string &config_file, int debug) {
             YAML::Node modelinfos = modelnode.second;
             std::string filename_autosuggestion=modelinfos["autosuggestion"].as<std::string>();
             std::string filename_autocorrection=modelinfos["autocorrection"].as<std::string>();
+            std::string filename_arpa_lm=modelinfos["arpa_lm"].as<std::string>();
             try
             {
                 // Creating the set of models for the API
+                if ((int) filename_arpa_lm.size() == 0)
+                {
+                    cerr << "[ERROR]\tLanguage model filename is not set for " << domain << endl;
+                    continue;
+                }
                 if ((int) filename_autosuggestion.size() == 0)
                 {
                     cerr << "[ERROR]\tAutosuggestion model filename is not set for " << domain << endl;
@@ -44,6 +50,11 @@ rest_server::rest_server(std::string &config_file, int debug) {
                 }
 //                 cout << "[INFO]\t"<< domain << "\t" << filename_autocorrection<< "\t"<< filename_autosuggestion << "\t" ;
                 suggest* suggest_pointer = new suggest(filename_autocorrection,filename_autosuggestion, domain);
+                if ((int) filename_arpa_lm.size() != 0)                
+                {
+                    suggest_pointer->load_lm(filename_arpa_lm);
+                }
+                
                 _list_suggest.push_back(suggest_pointer);
 //                 cout << "\t===> loaded" << endl;
             }
