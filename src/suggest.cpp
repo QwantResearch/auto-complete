@@ -61,10 +61,10 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
     std::vector<std::pair<float, std::string>> to_return_final;
     vp_t results_segTree = smart_suggest(query,nbest);
     string phrase_to_print;
+    string sub_query="";
+    string tmp_str="";
     if ((int)results_segTree.size() == 0)
     {
-        string sub_query="";
-        string tmp_str="";
         sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
         results_segTree = smart_suggest(sub_query,nbest);
         tmp_str=query.substr(0,query.find(" "));
@@ -104,9 +104,25 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
     if (kenlm != NULL)
     {
         cerr << "kenlm c'est pas null !"<<endl;
+        cerr << (int)to_return.size() << endl;
         for(int i=0 ; i < (int)to_return.size(); i++)
         {    
-            cerr << to_return[i].second <<"\t"<< to_return[i].first << "\t"<< ScoreSentenceLM(to_return[i].second.c_str()) << endl;
+            string lm_eval="";
+            if ((int)tmp_str.size() > 0)
+            {
+//                 cerr << (int)tmp_str.size() << endl;
+//                 cerr << (int)tmp_str.size()+2 << endl;
+//                 cerr << to_return[i].second.find(" ",(int)tmp_str.size()+2) <<endl;
+//                 cerr << (int)tmp_str.size() <<endl;
+//                 cerr << to_return[i].second.substr((int)tmp_str.size()+1,to_return[i].second.find(" ",(int)tmp_str.size()+1)-(int)tmp_str.size()-1)<<"|" << endl;
+                lm_eval=tmp_str+" "+to_return[i].second.substr((int)tmp_str.size()+1,to_return[i].second.find(" ",(int)tmp_str.size()+1)-(int)tmp_str.size()-1);
+                
+            }
+            else lm_eval=to_return[i].second;
+            float new_score=ScoreSentenceLM(lm_eval.c_str());
+            cerr << to_return[i].second <<"\t"<< to_return[i].first << "\t"<< new_score << "\t"<< to_return[i].first*new_score << "\t|"<< lm_eval<<"|" <<endl;
+            to_return[i].first=to_return[i].first*new_score;
+//             cerr << to_return[i].second <<"\t"<< to_return[i].first << "\t"<< ScoreSentenceLM(to_return[i].second.c_str()) << endl;
         }
     }
     else
@@ -114,7 +130,7 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
         cerr << "kenlm c'est null !"<<endl;
     }
         
-//     std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
+    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
     if ((int)to_return.size() > 0) to_return_final.push_back(to_return.at(0));
     for(int i=1 ; i < (int)to_return.size() && nbest > (int)to_return_final.size(); i++) // to remove double results
     {
@@ -143,7 +159,8 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
     pui_t best = _segmentTree_suggestion.query_max(first, last);
     heap.push(PhraseRange(first, last, best.first, best.second));
 
-    while (ret.size() < 2*n && !heap.empty()) {
+    while (ret.size() < 2*n && !heap.empty()) 
+    {
         PhraseRange pr = heap.top();
         heap.pop();
         // cerr<<"Top phrase is at index: "<<pr.index<<endl;
@@ -155,7 +172,8 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
         uint_t upper = pr.index - 1;
 
         // Prevent underflow
-        if (pr.index - 1 < pr.index && lower <= upper) {
+        if (pr.index - 1 < pr.index && lower <= upper) 
+        {
             // cerr<<"[1] adding to heap: "<<lower<<", "<<upper<<", "<<best.first<<", "<<best.second<<endl;
 
             best = _segmentTree_suggestion.query_max(lower, upper);
@@ -166,7 +184,8 @@ vp_t suggest::smart_suggest(std::string prefix, uint_t n) {
         upper = pr.last;
 
         // Prevent overflow
-        if (pr.index + 1 > pr.index && lower <= upper) {
+        if (pr.index + 1 > pr.index && lower <= upper) 
+        {
             // cerr<<"[2] adding to heap: "<<lower<<", "<<upper<<", "<<best.first<<", "<<best.second<<endl;
 
             best = _segmentTree_suggestion.query_max(lower, upper);
@@ -399,6 +418,8 @@ float suggest::ScoreSentenceLM(const char *sentence) // from KenLM source code
   }
   nbr_words=nbr_words+1;
   ret += kenlm->BaseScore(state, vocab.EndSentence(), state2);
-  per = pow (10,ret/nbr_words);
+//   per = (pow (10,ret/nbr_words))*(1.0/(1.0+nbr_words));
+  per = pow(10,-ret/nbr_words);
+//   per = ret/nbr_words;
   return per;
 }
