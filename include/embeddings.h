@@ -12,7 +12,6 @@
 // #include "tokenizer.h"
 
 using namespace std;
-namespace qnlp {
 class Embeddings {
     public:
         Embeddings (void);
@@ -38,11 +37,11 @@ class Embeddings {
         int getVecDimension() const;
         float getCosineSimilarity(string &s1, string &s2);
         float getCosineSimilarity(fasttext::Vector vec1, fasttext::Vector vec2);
+        float getCosineSimilarity(vector< float >  vec1, vector< float >  vec2);
     private:
         fasttext::FastText _embmodel;
-         std::unique_ptr<fasttext::DenseMatrix>  _wordVectors;
+        std::unique_ptr<fasttext::DenseMatrix>  _wordVectors;
         std::shared_ptr<const fasttext::Dictionary> _dict;
 };
 
-}
 #endif // EMBEDDINGS_H

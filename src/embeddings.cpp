@@ -1,7 +1,5 @@
 #include "embeddings.h"
 
-using namespace qnlp;
-
 Embeddings::Embeddings(string& filename)
 {
     
@@ -311,6 +309,29 @@ vector< float > Embeddings::getSentenceVector(string& sentence)
 
 
 float Embeddings::getCosineSimilarity(fasttext::Vector vec1, fasttext::Vector vec2)
+{
+    if (vec1.size() != vec2.size())
+    {
+        return 0.0;
+    }
+    else
+    {
+        int l_inc=0; 
+        float dot=0.0;
+        float denom_1=0.0;
+        float denom_2=0.0;
+        for(l_inc = 0; l_inc < (int)vec1.size(); l_inc++) 
+        {
+            dot += vec1[l_inc] * vec2[l_inc] ;
+            denom_1 += vec1[l_inc] * vec1[l_inc] ;
+            denom_2 += vec2[l_inc] * vec2[l_inc] ;
+        }
+        return dot / (sqrt(denom_1) * sqrt(denom_2)) ;
+    }
+    return 0.0;
+}       
+
+float Embeddings::getCosineSimilarity(vector< float >  vec1, vector< float >  vec2)
 {
     if (vec1.size() != vec2.size())
     {

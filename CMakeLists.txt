@@ -23,9 +23,10 @@ SET(auto-complete
   ${CMAKE_SOURCE_DIR}/src/segtree.cpp
   ${CMAKE_SOURCE_DIR}/src/sparsetable.cpp
   ${CMAKE_SOURCE_DIR}/src/lookuptables.cpp
+  ${CMAKE_SOURCE_DIR}/src/embeddings.cpp
 )
 add_executable(auto-complete ${auto-complete})
 
-target_link_libraries(auto-complete pistache pthread yaml-cpp symspell)
+target_link_libraries(auto-complete pistache pthread yaml-cpp symspell fasttext)
 
 install(TARGETS auto-complete DESTINATION bin)

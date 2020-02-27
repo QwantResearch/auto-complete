@@ -29,6 +29,7 @@ rest_server::rest_server(std::string &config_file, int debug) {
             YAML::Node modelinfos = modelnode.second;
             std::string filename_autosuggestion=modelinfos["autosuggestion"].as<std::string>();
             std::string filename_autocorrection=modelinfos["autocorrection"].as<std::string>();
+            std::string filename_embeddings=modelinfos["embeddings"].as<std::string>();
             try
             {
                 // Creating the set of models for the API
@@ -42,8 +43,14 @@ rest_server::rest_server(std::string &config_file, int debug) {
                     cerr << "[ERROR]\tAutocorrection model filename is not set for " << domain << endl;
                     continue;
                 }
+                if ((int) filename_embeddings.size() == 0)
+                {
+                    cerr << "[ERROR]\tEmbedding model filename is not set for " << domain << endl;
+                    continue;
+                }
 //                 cout << "[INFO]\t"<< domain << "\t" << filename_autocorrection<< "\t"<< filename_autosuggestion << "\t" ;
                 suggest* suggest_pointer = new suggest(filename_autocorrection,filename_autosuggestion, domain);
+                suggest_pointer->load_we_model(filename_embeddings);
                 _list_suggest.push_back(suggest_pointer);
 //                 cout << "\t===> loaded" << endl;
             }
