@@ -380,7 +380,10 @@ off_t suggest::file_size(const char *path)
 
 bool suggest::load_we_model(std::string & we_model_filename)
 {
+    time_t start_time = time(NULL);
+    cerr << "[INFO]:\t"<<currentDateTime()<<" Loading embeddings model for auto-suggestion data from "<<  we_model_filename <<  " ... " ;
     we_model=new Embeddings(we_model_filename);
+    cerr << "loaded in " <<  (int)(time(NULL) - start_time) << " seconds" << endl;
 }
 
 
