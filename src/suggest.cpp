@@ -63,9 +63,9 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
     string phrase_to_print;
     string sub_query="";
     string tmp_str="";
-    if ((int)results_segTree.size() == 0)
+    if ((int)results_segTree.size() == 0 && (int)query.find(" ") > -1)
     {
-        sub_query=query.substr(query.find(" ")+1,(int)query.size()-query.find(" "));
+        sub_query=query.substr(query.find(" ")+1,(int)query.size()-(int)query.find(" "));
         results_segTree = smart_suggest(sub_query,nbest);
         tmp_str=query.substr(0,query.find(" "));
         
@@ -101,33 +101,26 @@ std::vector<std::pair<float, std::string>>  suggest::process_query_autosuggestio
             to_return.push_back(pair<float,string>(results_segTree[i].weight,phrase_to_print));
         }
     }
-    if (we_model != NULL)
+    if (we_model != NULL && (int)tmp_str.size() > 0)
     {
         for(int i=0 ; i < (int)to_return.size(); i++)
         {    
             string we_eval="";
             string tmp_str_eval="";
             float new_score=1.0;
-            if ((int)tmp_str.size() > 0)
-            {
-                tmp_str_eval=tmp_str.substr(tmp_str.rfind(" ")+1,(int)tmp_str.size());
-                we_eval=to_return[i].second.substr((int)tmp_str.size()+1,to_return[i].second.size()-(int)tmp_str.size()-1);
-                new_score=eval_cosine_distance(tmp_str_eval,we_eval);
-                
-            }
-            else we_eval=to_return[i].second;
+            tmp_str_eval=tmp_str.substr(tmp_str.rfind(" ")+1,(int)tmp_str.size());
+            we_eval=to_return[i].second.substr((int)tmp_str.size()+1,to_return[i].second.size()-(int)tmp_str.size()-1);
+            new_score=eval_cosine_distance(tmp_str_eval,we_eval);
 //             cerr << to_return[i].second <<"\t"<< to_return[i].first << "\t"<< new_score << "\t"<< to_return[i].first*new_score << "\t|"<< tmp_str_eval+","+we_eval<<"|" <<endl;
             to_return[i].first=to_return[i].first*new_score;
         }
+        std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
     }
         
-    std::sort ( to_return.begin(), to_return.end(), mySortingFunctionFloatString );
-    if ((int)to_return.size() > 0) to_return_final.push_back(to_return.at(0));
-    for(int i=1 ; i < (int)to_return.size() && nbest > (int)to_return_final.size(); i++)
+    for(int i=0 ; i < (int)to_return.size() && nbest > (int)to_return_final.size(); i++)
     {
-        string prev = to_return.at(i-1).second;
         string current = to_return.at(i).second;
-        if (prev != current) to_return_final.push_back(to_return.at(i));
+        if ( ! FindInVector(current,to_return_final)) to_return_final.push_back(to_return.at(i));
     }
     return to_return_final;
 }

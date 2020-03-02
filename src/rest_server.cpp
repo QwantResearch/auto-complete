@@ -13,6 +13,10 @@ rest_server::rest_server(std::string &config_file, int debug) {
 //   model_config.open(classif_config);
     std::string line;
     YAML::Node config;
+    std::string domain;
+    std::string filename_autosuggestion;
+    std::string filename_autocorrection;
+    std::string filename_embeddings;
 
     try
     {
@@ -25,30 +29,27 @@ rest_server::rest_server(std::string &config_file, int debug) {
         YAML::Node modelconfig = config["models"];
         for (const auto& modelnode : modelconfig)
         {
-            std::string domain=modelnode.first.as<std::string>();
             YAML::Node modelinfos = modelnode.second;
-            std::string filename_autosuggestion=modelinfos["autosuggestion"].as<std::string>();
-            std::string filename_autocorrection=modelinfos["autocorrection"].as<std::string>();
-            std::string filename_embeddings=modelinfos["embeddings"].as<std::string>();
+            domain=modelnode.first.as<std::string>();
+            filename_autosuggestion=modelinfos["autosuggestion"].as<std::string>();
+            filename_autocorrection=modelinfos["autocorrection"].as<std::string>();
+            filename_embeddings=modelinfos["embeddings"].as<std::string>();
+            if ((int) filename_autosuggestion.size() == 0)
+            {
+                cerr << "[ERROR]\tAutosuggestion model filename is not set for " << domain << endl;
+            }
+            if ((int) filename_autocorrection.size() == 0)
+            {
+                cerr << "[ERROR]\tAutocorrection model filename is not set for " << domain << endl;
+            }
+            if ((int) filename_embeddings.size() == 0)
+            {
+                cerr << "[ERROR]\tEmbedding model filename is not set for " << domain << endl;
+            }
+                // Creating the set of models for the API
+//                 cout << "[INFO]\t"<< domain << "\t" << filename_autocorrection<< "\t"<< filename_autosuggestion << "\t" ;
             try
             {
-                // Creating the set of models for the API
-                if ((int) filename_autosuggestion.size() == 0)
-                {
-                    cerr << "[ERROR]\tAutosuggestion model filename is not set for " << domain << endl;
-                    continue;
-                }
-                if ((int) filename_autocorrection.size() == 0)
-                {
-                    cerr << "[ERROR]\tAutocorrection model filename is not set for " << domain << endl;
-                    continue;
-                }
-                if ((int) filename_embeddings.size() == 0)
-                {
-                    cerr << "[ERROR]\tEmbedding model filename is not set for " << domain << endl;
-                    continue;
-                }
-//                 cout << "[INFO]\t"<< domain << "\t" << filename_autocorrection<< "\t"<< filename_autosuggestion << "\t" ;
                 suggest* suggest_pointer = new suggest(filename_autocorrection,filename_autosuggestion, domain);
                 suggest_pointer->load_we_model(filename_embeddings);
                 _list_suggest.push_back(suggest_pointer);
@@ -56,13 +57,27 @@ rest_server::rest_server(std::string &config_file, int debug) {
             }
             catch (invalid_argument& inarg)
             {
-                cerr << "[ERROR]\t" << inarg.what() << endl;
+                 cerr << "[ERROR]\t" << inarg.what() << endl;
                 continue;
             }
         }
-    } catch (YAML::BadFile& bf) {
-      cerr << "[ERROR]\t" << bf.what() << endl;
-      exit(1);
+    } 
+    catch (YAML::BadFile& bf) 
+    {
+        if ((int) filename_autosuggestion.size() == 0)
+        {
+            cerr << "[ERROR]\tAutosuggestion model filename is not set for " << domain << endl;
+        }
+        if ((int) filename_autocorrection.size() == 0)
+        {
+            cerr << "[ERROR]\tAutocorrection model filename is not set for " << domain << endl;
+        }
+        if ((int) filename_embeddings.size() == 0)
+        {
+            cerr << "[ERROR]\tEmbedding model filename is not set for " << domain << endl;
+        }
+        cerr << "[ERROR]\t" << bf.what() << endl;
+        exit(1);
     }
 }
 
@@ -186,6 +201,8 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
   if (j.find("text") != j.end()) {
     string text = j["text"];
     text=trim(text);
+    text=lowercase(text);
+    j.push_back(nlohmann::json::object_t::value_type(string("tokenized"), text));
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
@@ -229,7 +246,6 @@ void rest_server::doAutocompletePost(const Rest::Request &request,
             resultsSuggestion = askAutoSuggestion(text, domain, count_suggestion, threshold);
             j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), resultsSuggestion));
         }
-        
       } 
       else 
       {
@@ -285,6 +301,8 @@ void rest_server::doAutocorrectionPost(const Rest::Request& request, Http::Respo
   if (j.find("text") != j.end()) {
     string text = j["text"];
     text=trim(text);
+    text=lowercase(text);
+    j.push_back(nlohmann::json::object_t::value_type(string("tokenized"), text));
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
@@ -368,6 +386,8 @@ void rest_server::doAutosuggestionPost(const Rest::Request& request, Http::Respo
   if (j.find("text") != j.end()) {
     string text = j["text"];
     text=trim(text);
+    text=lowercase(text);
+    j.push_back(nlohmann::json::object_t::value_type(string("tokenized"), text));
     string lang = j["language"];
     if (text.length() > 0) {
       if (_debug_mode != 0)
@@ -377,20 +397,6 @@ void rest_server::doAutosuggestionPost(const Rest::Request& request, Http::Respo
         string domain = j["domain"];
         std::vector<std::pair<float, std::string>> results;
         std::vector<std::pair<float, std::string>> results_tmp;
-//         results = askAutoCorrection(text, domain, count, threshold);
-//         json json_results_tmp;
-//         
-//         for (int i = 0 ; i < (int)results.size(); i++)
-//         {
-//             json local_json_results_tmp;
-//             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("score"), results[i].first));
-//             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("correction"), results[i].second));
-//             string tmp_str=results[i].second;
-//             results_tmp = askAutoSuggestion(tmp_str, domain, count, threshold);
-//             local_json_results_tmp.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results_tmp));
-//             json_results_tmp.push_back(local_json_results_tmp);
-//         }
-//         j.push_back(nlohmann::json::object_t::value_type(string("corrections"), json_results_tmp));
         results = askAutoSuggestion(text, domain, count, threshold);
         j.push_back(nlohmann::json::object_t::value_type(string("suggestions"), results));
         
@@ -452,7 +458,7 @@ rest_server::askAutoSuggestion(std::string &text, std::string &domain,
     if (it_suggest != _list_suggest.end()) {
       to_return = (*it_suggest)->process_query_autosuggestion(text, count);
     }
-  }
+}
   return to_return;
 }
 

@@ -328,6 +328,33 @@ std::string trim(std::string& str)
     return str;
 }
 
+std::string lowercase(std::string& str)
+{
+    string to_return;
+    for (std::string::size_type i=0; i < str.length(); ++i)
+        to_return=to_return+ToLower(str[i]);
+    return to_return;
+}
+
+bool FindInVector(std::string& str, std::vector < std::pair < float,std::string > > & vec)
+{
+    int i=0;
+    while ( i < (int)vec.size())
+    {
+        if ((int)str.compare(vec[i].second) == 0) return true;
+        i++;
+    }
+    return false;
+}
+
+char ToLower(char& c)
+{
+    if (c > -129 && c < -97 && c != -105 )
+    {
+        return c+32;
+    }
+    return tolower(c);
+}
 
 namespace Generic {
 void handleReady(const Pistache::Rest::Request &req, Pistache::Http::ResponseWriter response) {
