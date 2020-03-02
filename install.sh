@@ -12,7 +12,7 @@ echo "Installing dependencies"
 
 # pushd third_party && rm -rf openfst-1.6.1 && tar xvfz openfst-1.6.1.tar.gz && cd openfst-1.6.1 &&  ./configure --enable-ngram-fsts &&  make -j 4  && make install && popd
 
-for dep in json pistache SymSpellPlusPlus
+for dep in json pistache SymSpellPlusPlus fastText
 do
 pushd third_party/$dep
 	rm -rf build

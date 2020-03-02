@@ -14,6 +14,7 @@
 #include "types.h"
 #include "phrase_map.h"
 #include "benderrmq.h"
+#include "embeddings.h"
 
 
 using namespace std;
@@ -52,7 +53,9 @@ public:
   vp_t naive_suggest(std::string prefix, uint_t n = 16);
   vp_t smart_suggest(std::string prefix, uint_t n = 16);
   int load_pm(string file, int& rnadded, int& rnlines);
+  float eval_cosine_distance(std::string & s1, std::string & s2);
   off_t file_size(const char *path);
+  bool load_we_model(std::string & we_model_filename);
 
   
   
@@ -69,6 +72,7 @@ private:
     bool _pm_is_building;
     char *_if_mmap_addr;
     off_t _if_length;
+    Embeddings *we_model;
     
 };
 

@@ -279,6 +279,12 @@ const std::string currentDateTime();
 
 bool mySortingFunctionFloatString ( const std::pair<float, std::string>& i, const std::pair<float, std::string>& j );
 
+bool FindInVector(std::string& str, std::vector < std::pair < float,std::string > > & vec);
+
+std::string lowercase(std::string & str);
+char ToLower(char &c);
+
+
 namespace Generic {
 void handleReady(const Pistache::Rest::Request &req, Pistache::Http::ResponseWriter response);
 } // namespace Generic
