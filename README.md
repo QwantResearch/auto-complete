@@ -19,7 +19,7 @@ Or with docker:
 
 # Query the API
 
-```curl -X POST http://localhost:9009/autocomplete/ -H 'Content-Type: application/json' -d '{text="jonny","language":"fr","domain","data_fr","count":5}'```
+```curl -X POST http://localhost:9009/autocomplete/ -H 'Content-Type: application/json' -d '{"text":"jonny","language":"fr","domain","data_fr","count":5}'```
 
 expected result:
 
